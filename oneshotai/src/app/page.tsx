@@ -125,7 +125,10 @@ export default function Home() {
               <span>Your OneShot Prompt:</span>
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(prompt);
+                  const promptEl = document.getElementById('oneshot-prompt-text');
+                  if (promptEl) {
+                    navigator.clipboard.writeText(promptEl.textContent || '');
+                  }
                 }}
                 className="ml-2 px-3 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold shadow transition-all"
                 title="Copy prompt to clipboard"
@@ -134,7 +137,7 @@ export default function Home() {
                 Copy
               </button>
             </div>
-            <pre className="whitespace-pre-wrap break-words text-base text-gray-900 dark:text-gray-100">{prompt}</pre>
+            <pre id="oneshot-prompt-text" className="whitespace-pre-wrap break-words text-base text-gray-900 dark:text-gray-100">{prompt}</pre>
           </div>
         )}
       </main>

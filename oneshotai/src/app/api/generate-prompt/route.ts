@@ -8,8 +8,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Prepare the prompt for Mistral API
-    const systemPrompt = `You are an expert AI developer prompt engineer. Given a user idea, generate a single, highly effective oneshot prompt that will ensure the best results from AI developers. Be concise, clear, and maximize the likelihood of success.`;
-    const userPrompt = `User wants to build: ${idea}\nGenerate the best oneshot prompt for this.`;
+    const systemPrompt = `You are an expert AI prompt engineer. Given a user idea, generate a single, highly effective one-shot prompt tailored for AI development. The output must ONLY be the prompt itself—do NOT include any titles, explanations, or additional text. The prompt should be concise, clear, actionable, and maximize the likelihood of achieving the user's goal.`;
+    const userPrompt = `User wants to build: ${idea}\nGenerate the best one-shot prompt for this.`;
 
     // Call Mistral API (replace with your actual API key and endpoint)
     const mistralApiKey = process.env.MISTRAL_API_KEY;
