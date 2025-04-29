@@ -121,7 +121,19 @@ export default function Home() {
         {error && <div className="text-red-600 mt-2 text-sm text-center">{error}</div>}
         {prompt && (
           <div className="mt-8 w-full bg-white/40 dark:bg-[#23272f]/40 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-inner backdrop-blur-lg backdrop-saturate-150 border-t border-l border-white/40 dark:border-white/10">
-            <div className="font-semibold mb-2 text-gray-800 dark:text-gray-100">Your OneShot Prompt:</div>
+            <div className="font-semibold mb-2 text-gray-800 dark:text-gray-100 flex items-center justify-between">
+              <span>Your OneShot Prompt:</span>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(prompt);
+                }}
+                className="ml-2 px-3 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold shadow transition-all"
+                title="Copy prompt to clipboard"
+                aria-label="Copy prompt"
+              >
+                Copy
+              </button>
+            </div>
             <pre className="whitespace-pre-wrap break-words text-base text-gray-900 dark:text-gray-100">{prompt}</pre>
           </div>
         )}
