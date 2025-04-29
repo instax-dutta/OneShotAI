@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     const generatedPrompt = data.choices?.[0]?.message?.content?.trim() || "Failed to generate prompt.";
 
     return NextResponse.json({ prompt: generatedPrompt });
-  } catch (_error) {
+  } catch {
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });
   }
 }
