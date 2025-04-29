@@ -35,8 +35,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      return NextResponse.json({ error: `Mistral API error: ${error}` }, { status: 500 });
+      return NextResponse.json({ error: `Mistral API error: ${await response.text()}` }, { status: 500 });
     }
 
     const data = await response.json();
