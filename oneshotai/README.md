@@ -14,7 +14,7 @@ OneShotAI is an AI-powered prompt engineering tool that generates highly effecti
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/oneshotai.git
+   git clone https://github.com/instax-dutta/oneshotai.git
    cd oneshotai
    ```
 
