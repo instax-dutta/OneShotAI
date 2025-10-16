@@ -95,8 +95,8 @@ export default function Home() {
         setHistory(prev => [newItem, ...prev].slice(0, 200));
       }
       else setError(data.error || "Failed to generate prompt.");
-    } catch (err: any) {
-      if (err?.name === "AbortError") {
+    } catch (err: unknown) {
+      if (err instanceof DOMException && err.name === "AbortError") {
         setError("Request cancelled.");
       } else {
         setError("Something went wrong. Please try again.");
