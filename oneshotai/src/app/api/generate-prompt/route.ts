@@ -29,7 +29,8 @@ export async function POST(req: NextRequest) {
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        max_tokens: 512,
+        // Raise token cap to reduce truncation risk on longer prompts
+        max_tokens: 2048,
         temperature: 0.7,
       }),
     });

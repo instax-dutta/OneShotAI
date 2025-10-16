@@ -1,6 +1,8 @@
 "use client";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function Home() {
   const [idea, setIdea] = useState("");
@@ -137,7 +139,9 @@ export default function Home() {
                 Copy
               </button>
             </div>
-            <pre id="oneshot-prompt-text" className="whitespace-pre-wrap break-words text-base text-gray-900 dark:text-gray-100">{prompt}</pre>
+            <div id="oneshot-prompt-text" className="prose dark:prose-invert max-w-none text-base text-gray-900 dark:text-gray-100">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{prompt}</ReactMarkdown>
+            </div>
           </div>
         )}
       </main>
