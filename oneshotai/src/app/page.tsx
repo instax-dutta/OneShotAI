@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -11,30 +11,140 @@ export default function Home() {
   const [error, setError] = useState("");
   const [year, setYear] = useState("");
 
+  // History state and helpers
+  type HistoryItem = { id: string; title: string; idea: string; prompt: string; tags: string[]; createdAt: number };
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [historySearch, setHistorySearch] = useState("");
+  const [activeTagFilter, setActiveTagFilter] = useState<string>("");
+
+  // Templates
+  const templates = useMemo(() => ([
+    "AI note-taker that summarizes meetings and action items",
+    "E-commerce product recommender using user behavior",
+    "Customer support chatbot that triages and answers FAQs",
+    "Code review assistant suggesting improvements and tests",
+    "SEO content generator for landing pages with variants"
+  ]), []);
+
+  // Input guidance
+  const minIdeaChars = 12;
+  const estimatedTokens = useMemo(() => {
+    const words = idea.trim().split(/\s+/).filter(Boolean).length;
+    return Math.max(1, Math.round(words * 1.3));
+  }, [idea]);
+  const ideaIsValid = idea.trim().length >= minIdeaChars;
+
+  // Abort for cancel
+  const abortRef = useRef<AbortController | null>(null);
+
   useEffect(() => {
     setYear(new Date().getFullYear().toString());
   }, []);
 
+  // Load/save draft and history
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("oneshot_draft");
+      if (stored) {
+        const draft = JSON.parse(stored);
+        if (typeof draft?.idea === "string") setIdea(draft.idea);
+      }
+      const hist = localStorage.getItem("oneshot_history");
+      if (hist) {
+        const parsed = JSON.parse(hist);
+        if (Array.isArray(parsed)) setHistory(parsed);
+      }
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try { localStorage.setItem("oneshot_draft", JSON.stringify({ idea })); } catch {}
+  }, [idea]);
+  useEffect(() => {
+    try { localStorage.setItem("oneshot_history", JSON.stringify(history)); } catch {}
+  }, [history]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!ideaIsValid) {
+      setError(`Please add more detail (at least ${minIdeaChars} characters).`);
+      return;
+    }
     setLoading(true);
     setPrompt("");
     setError("");
     try {
+      if (abortRef.current) abortRef.current.abort();
+      abortRef.current = new AbortController();
       const res = await fetch("/api/generate-prompt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idea }),
+        signal: abortRef.current.signal,
       });
       const data = await res.json();
-      if (data.prompt) setPrompt(data.prompt);
+      if (data.prompt) {
+        setPrompt(data.prompt);
+        const newItem = {
+          id: Math.random().toString(36).slice(2),
+          title: idea.trim().slice(0, 60) || "Untitled",
+          idea,
+          prompt: data.prompt,
+          tags: [],
+          createdAt: Date.now(),
+        };
+        setHistory(prev => [newItem, ...prev].slice(0, 200));
+      }
       else setError(data.error || "Failed to generate prompt.");
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err: any) {
+      if (err?.name === "AbortError") {
+        setError("Request cancelled.");
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
   }
+
+  function handleCancel() {
+    abortRef.current?.abort();
+  }
+
+  function handleRetry() {
+    const fakeEvent = { preventDefault: () => {} } as unknown as React.FormEvent;
+    handleSubmit(fakeEvent);
+  }
+
+  function handleReuse(item: { idea: string; prompt: string }) {
+    setIdea(item.idea);
+    setPrompt(item.prompt);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function handleExport(item: { idea: string; prompt: string }) {
+    const content = `Idea:\n${item.idea}\n\nPrompt:\n${item.prompt}`;
+    navigator.clipboard.writeText(content);
+  }
+
+  function updateHistoryTitle(id: string, title: string) {
+    setHistory(prev => prev.map(h => h.id === id ? { ...h, title } : h));
+  }
+  function updateHistoryTags(id: string, tagsCsv: string) {
+    const tags = tagsCsv.split(",").map(t => t.trim()).filter(Boolean);
+    setHistory(prev => prev.map(h => h.id === id ? { ...h, tags } : h));
+  }
+  function deleteHistoryItem(id: string) {
+    setHistory(prev => prev.filter(h => h.id !== id));
+  }
+
+  const filteredHistory = useMemo(() => {
+    const q = historySearch.toLowerCase();
+    return history.filter(h => {
+      const matchesQ = !q || h.title.toLowerCase().includes(q) || h.idea.toLowerCase().includes(q) || h.prompt.toLowerCase().includes(q) || h.tags.join(" ").toLowerCase().includes(q);
+      const matchesTag = !activeTagFilter || h.tags.includes(activeTagFilter);
+      return matchesQ && matchesTag;
+    });
+  }, [history, historySearch, activeTagFilter]);
 
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)] relative">
@@ -99,8 +209,10 @@ export default function Home() {
           <h1 className="text-3xl sm:text-4xl font-extrabold mb-2 text-center tracking-tight text-gray-900 dark:text-white drop-shadow">OneShotAI</h1>
           <p className="text-center text-lg mb-6 text-gray-700 dark:text-gray-300 max-w-md">Describe your vision. Get a single, highly effective prompt for your AI project.</p>
         </div>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full" aria-label="Prompt generator form">
+          <label htmlFor="idea-input" className="sr-only">Describe your AI project idea</label>
           <textarea
+            id="idea-input"
             className="rounded-lg border border-gray-300 dark:border-gray-700 p-4 min-h-[100px] resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-[#23272f] text-black dark:text-white text-base shadow-sm transition-all"
             placeholder="Describe your AI project idea..."
             value={idea}
@@ -108,6 +220,23 @@ export default function Home() {
             required
             disabled={loading}
           />
+          <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
+            <div>
+              <span aria-live="polite">{idea.trim().length} chars</span>
+              <span className="mx-2">·</span>
+              <span title="Approximate token estimate">~{estimatedTokens} tokens</span>
+              {!ideaIsValid && <span className="ml-2 text-amber-600">Add more detail for better results</span>}
+            </div>
+            <div className="flex gap-2">
+              <span className="hidden sm:inline text-gray-500">Templates:</span>
+              {templates.map((t, i) => (
+                <button type="button" key={i} className="px-2 py-1 rounded bg-gray-100 dark:bg-[#2a2f3a] hover:bg-gray-200 dark:hover:bg-[#353b48] text-gray-800 dark:text-gray-100"
+                  onClick={() => setIdea(t)} aria-label={`Use template ${i+1}`}>
+                  Try {i+1}
+                </button>
+              ))}
+            </div>
+          </div>
           <button
             type="submit"
             className="rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 text-lg shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed"
@@ -119,6 +248,16 @@ export default function Home() {
               "Generate Prompt"
             )}
           </button>
+          {loading && (
+            <div className="flex justify-end">
+              <button type="button" onClick={handleCancel} className="px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-xs font-semibold shadow" aria-label="Cancel generation">Cancel</button>
+            </div>
+          )}
+          {!loading && error && (
+            <div className="flex justify-end">
+              <button type="button" onClick={handleRetry} className="px-3 py-1 rounded bg-gray-200 dark:bg-[#2a2f3a] hover:bg-gray-300 dark:hover:bg-[#353b48] text-xs" aria-label="Retry generation">Retry</button>
+            </div>
+          )}
         </form>
         {error && <div className="text-red-600 mt-2 text-sm text-center">{error}</div>}
         {prompt && (
@@ -144,6 +283,51 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* History Panel */}
+        <section aria-label="History" className="mt-10 w-full">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">History</h2>
+            <div className="flex gap-2 items-center">
+              <input aria-label="Search history" value={historySearch} onChange={e=>setHistorySearch(e.target.value)} placeholder="Search..." className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#23272f]" />
+              <select aria-label="Filter by tag" value={activeTagFilter} onChange={e=>setActiveTagFilter(e.target.value)} className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#23272f]">
+                <option value="">All tags</option>
+                {[...new Set(history.flatMap(h => h.tags))].map(tag => (
+                  <option key={tag} value={tag}>{tag}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {filteredHistory.length === 0 ? (
+            <div className="text-xs text-gray-500">No history yet.</div>
+          ) : (
+            <ul className="space-y-2">
+              {filteredHistory.map(item => (
+                <li key={item.id} className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-[#23272f]/50">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <input
+                      aria-label="Rename entry"
+                      className="text-sm font-medium bg-transparent outline-none border-b border-transparent focus:border-blue-500 text-gray-900 dark:text-gray-100"
+                      value={item.title}
+                      onChange={e => updateHistoryTitle(item.id, e.target.value)}
+                    />
+                    <div className="flex gap-2">
+                      <button className="px-2 py-1 text-xs rounded bg-blue-500 hover:bg-blue-600 text-white" onClick={() => handleReuse(item)} aria-label="Reuse">Reuse</button>
+                      <button className="px-2 py-1 text-xs rounded bg-gray-200 dark:bg-[#2a2f3a] hover:bg-gray-300 dark:hover:bg-[#353b48]" onClick={() => handleExport(item)} aria-label="Export">Export</button>
+                      <button className="px-2 py-1 text-xs rounded bg-red-500 hover:bg-red-600 text-white" onClick={() => deleteHistoryItem(item.id)} aria-label="Delete">Delete</button>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-600 dark:text-gray-400 truncate" title={item.idea}>{item.idea}</div>
+                  <div className="mt-2">
+                    <label className="text-xs text-gray-500 mr-2" htmlFor={`tags-${item.id}`}>Tags</label>
+                    <input id={`tags-${item.id}`} aria-label="Edit tags" placeholder="comma,separated,tags" className="px-2 py-1 text-xs rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#23272f] w-full sm:w-auto"
+                      value={item.tags.join(", ")} onChange={e => updateHistoryTags(item.id, e.target.value)} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </main>
       <footer className="row-start-3 flex flex-col gap-2 items-center justify-center text-xs text-gray-500 dark:text-gray-400 mt-8">
         <span>&copy; {year} OneShotAI. All rights reserved.</span>

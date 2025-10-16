@@ -61,6 +61,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <div role="status" aria-live="polite" className="w-full text-center text-[13px] sm:text-sm bg-gradient-to-r from-indigo-600 via-fuchsia-600 to-pink-600 text-white py-2 shadow">
+          🚀 Big update just dropped: better prompts, history, templates, and more!
+        </div>
         {children}
       </body>
     </html>
