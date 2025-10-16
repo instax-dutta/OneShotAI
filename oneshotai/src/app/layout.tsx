@@ -13,20 +13,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OneShotAI – AI-Powered Prompt Engineering Tool",
-  description: "OneShotAI helps AI developers generate highly effective one-shot prompts based on user ideas. Fast, intuitive, and powered by Mistral API.",
+  title: "OneShotAI – Big Update: History, Templates, Better Prompts",
+  description: "New release: auto-saved prompt history with tags/search, curated templates, real-time guidance, improved run controls, and accessibility. Powered by Mistral API.",
   keywords: [
     "AI",
     "Prompt Engineering",
     "One-Shot Prompts",
+    "Prompt History",
+    "Templates",
+    "Accessibility",
     "Mistral API",
     "Next.js",
     "AI Development",
     "AI Tools"
   ],
   openGraph: {
-    title: "OneShotAI – AI-Powered Prompt Engineering Tool",
-    description: "Generate optimized one-shot prompts for AI development. Simple, fast, and powered by Mistral API.",
+    title: "OneShotAI – Big Update: History, Templates, Better Prompts",
+    description: "Auto-saved history with tags/search, templates, real-time guidance, improved run controls.",
     url: "https://oneshotai.com/",
     siteName: "OneShotAI",
     images: [
@@ -34,7 +37,7 @@ export const metadata: Metadata = {
         url: "https://oneshotai.com/og-image.png",
         width: 1200,
         height: 630,
-        alt: "OneShotAI – AI-Powered Prompt Engineering Tool"
+        alt: "OneShotAI – Big Update"
       }
     ],
     locale: "en_US",
@@ -42,8 +45,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "OneShotAI – AI-Powered Prompt Engineering Tool",
-    description: "Generate optimized one-shot prompts for AI development. Simple, fast, and powered by Mistral API.",
+    title: "OneShotAI – Big Update: History, Templates, Better Prompts",
+    description: "Auto-saved history with tags/search, templates, real-time guidance, improved run controls.",
     images: ["https://oneshotai.com/og-image.png"]
   }
 };
