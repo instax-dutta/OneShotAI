@@ -7,14 +7,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid input." }, { status: 400 });
     }
 
-    // Prepare the prompt for OneShotML
+    // Prepare the prompt for Mistral API
     const systemPrompt = `You are an elite prompt engineer. Produce ONE production-ready, copy-pastable prompt tailored to the user's idea. Rules:\n- Output ONLY the prompt content, no preface, titles, or markdown fences\n- Make it concise, specific, and actionable\n- Include role, objective, constraints, style, and clear steps\n- Clarify assumptions where helpful, but avoid meta commentary\n- Prefer bullet lists for steps or acceptance criteria if useful`;
     const userPrompt = `User idea: ${idea}\nCraft the single best prompt following the rules.`;
 
-    // Call OneShotML API (replace with your actual API key and endpoint)
+    // Call Mistral API (replace with your actual API key and endpoint)
     const mistralApiKey = process.env.MISTRAL_API_KEY;
     if (!mistralApiKey) {
-      return NextResponse.json({ error: "API key not set." }, { status: 500 });
+      return NextResponse.json({ error: "Mistral API key not set." }, { status: 500 });
     }
 
     const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!response.ok) {
-      return NextResponse.json({ error: `Upstream API error: ${await response.text()}` }, { status: 500 });
+      return NextResponse.json({ error: `Mistral API error: ${await response.text()}` }, { status: 500 });
     }
 
     const data = await response.json();
