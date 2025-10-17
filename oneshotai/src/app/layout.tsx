@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://oneshotai.site"),
   title: "OneShotAI – Big Update: History, Templates, Better Prompts",
-  description: "New release: auto-saved prompt history with tags/search, curated templates, real-time guidance, improved run controls, and accessibility. Powered by Mistral API.",
+  description: "New release: auto-saved prompt history with tags/search, curated templates, real-time guidance, improved run controls, and accessibility. Powered by OneShotML.",
   keywords: [
     "AI",
     "Prompt Engineering",
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     "Prompt History",
     "Templates",
     "Accessibility",
-    "Mistral API",
+    "OneShotML",
     "Next.js",
     "AI Development",
     "AI Tools"

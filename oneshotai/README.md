@@ -1,11 +1,11 @@
 # OneShotAI
 
-OneShotAI is an AI-powered prompt engineering tool that generates highly effective one-shot prompts for AI developers based on user ideas. Built with Next.js and designed for rapid prototyping and deployment, it leverages the Mistral API for prompt generation.
+OneShotAI is an AI-powered prompt engineering tool that generates highly effective one-shot prompts for AI developers based on user ideas. Built with Next.js and designed for rapid prototyping and deployment, it is powered by OneShotML for prompt generation.
 
 ## Features
 - Generate optimized one-shot prompts for AI development
 - Simple, intuitive web interface
-- Powered by Mistral API
+- Powered by OneShotML
 - Built with Next.js for fast performance and easy deployment
 
 ## Getting Started
@@ -27,7 +27,7 @@ OneShotAI is an AI-powered prompt engineering tool that generates highly effecti
 
 3. **Set up environment variables:**
    - Create a `.env.local` file in the root of the `oneshotai` directory.
-   - Add your Mistral API key:
+   - Add your API key:
      ```env
      MISTRAL_API_KEY=your-mistral-api-key-here
      ```
@@ -53,7 +53,7 @@ OneShotAI is an AI-powered prompt engineering tool that generates highly effecti
 For more details, see the [Vercel deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying).
 
 ## Environment Variables
-- `MISTRAL_API_KEY`: Your API key for the Mistral API. **Required for both local development and production.**
+- `MISTRAL_API_KEY`: Your API key. **Required for both local development and production.**
 
 ## Contributing
 Contributions are welcome! Please open issues or submit pull requests for improvements and bug fixes.
@@ -67,5 +67,5 @@ Contributions are welcome! Please open issues or submit pull requests for improv
 
 ## Acknowledgements
 - [Next.js](https://nextjs.org/)
-- [Mistral AI](https://mistral.ai/)
+ 
 - [Vercel](https://vercel.com/)
