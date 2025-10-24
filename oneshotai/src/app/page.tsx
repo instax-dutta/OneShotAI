@@ -123,7 +123,15 @@ export default function Home() {
 
   function handleExport(item: { idea: string; prompt: string }) {
     const content = `Idea:\n${item.idea}\n\nPrompt:\n${item.prompt}`;
-    navigator.clipboard.writeText(content);
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `oneshot-prompt-${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   function updateHistoryTitle(id: string, title: string) {
